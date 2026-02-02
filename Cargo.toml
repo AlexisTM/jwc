@@ -1,0 +1,51 @@
+[package]
+name = "jwc"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = ["jwc_derive", "jwc_py"]
+
+[dependencies]
+jwcc_derive = { package = "jwc_derive", path = "jwc_derive" }
+hotpath = { version = "0.13", optional = true }
+
+[features]
+default = ["lazy", "simd"]
+profiling = ["hotpath/hotpath"]
+lazy = []
+arbitrary_precision = []
+# x86_64 SIMD (SSE4.2 + AVX2) for whitespace / string / newline scanning.
+# Runtime-detected; falls back to scalar on other archs or older CPUs.
+simd = []
+
+[[bench]]
+name = "parse_small"
+harness = false
+
+[[bench]]
+name = "parse_large"
+harness = false
+
+[[bench]]
+name = "parse_nested"
+harness = false
+
+[[bench]]
+name = "access"
+harness = false
+
+[dev-dependencies]
+criterion = "0.8.1"
+json = "0.12.4"
+jsonic = "0.2.14"
+serde = "1.0.228"
+serde-json-core = "0.6.0"
+serde_json = "1.0.149"
+simd-json = "0.17.0"
+sonic-rs = "0.5.6"
+tinyjson = "2.5.1"
+
+[profile.profiling]
+inherits = "release"
+debug = true
