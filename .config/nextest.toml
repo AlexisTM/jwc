@@ -1,0 +1,6 @@
+# `cargo nextest run --profile ci` writes target/nextest/ci/junit.xml for Codecov test analytics.
+[profile.ci]
+fail-fast = false
+
+[profile.ci.junit]
+path = "junit.xml"

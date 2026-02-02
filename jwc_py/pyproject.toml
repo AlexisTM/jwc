@@ -1,0 +1,13 @@
+[build-system]
+requires = ["maturin>=1.6,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "jwc"
+version = "0.1.0"
+description = "Python frontend for jwc (JSON with comments)"
+readme = "README.md"
+requires-python = ">=3.8"
+
+[project.optional-dependencies]
+test = ["pytest>=8,<9"]

@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (pedantic via workspace lints)
+        run: cargo clippy --workspace --all-targets -- -D warnings
+
+      - name: Clippy without default features
+        run: cargo clippy --workspace --no-default-features -- -D warnings
+
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-llvm-cov,cargo-nextest
+      - uses: Swatinem/rust-cache@v2
+
+      # One run gives both the coverage report (lcov.info) and the JUnit test
+      # results (target/nextest/ci/junit.xml, see .config/nextest.toml).
+      - name: Tests with coverage
+        run: cargo llvm-cov nextest --workspace --profile ci --lcov --output-path lcov.info
+
+      - name: Doc tests
+        run: cargo test --workspace --doc
+
+      - name: Tests without default features
+        run: cargo nextest run --workspace --no-default-features
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          files: lcov.info
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v5
+        with:
+          report_type: test_results
+          files: target/nextest/ci/junit.xml
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  python:
+    name: Python binding
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build and test jwc_py
+        working-directory: jwc_py
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip maturin pytest
+          maturin develop --release
+          pytest -q tests

@@ -1,0 +1,15 @@
+[package]
+name = "jwc_py"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "jwc"
+crate-type = ["cdylib"]
+
+[lints]
+workspace = true
+
+[dependencies]
+jwc = { path = ".." }
+pyo3 = { version = "0.29", features = ["extension-module"] }
