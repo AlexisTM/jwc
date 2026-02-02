@@ -1,0 +1,38 @@
+[package]
+name = "jwc"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = ["jwc_derive", "jwc_py"]
+
+[dependencies]
+jwcc_derive = { package = "jwc_derive", path = "jwc_derive" }
+hotpath = { version = "0.13", optional = true }
+
+[features]
+default = ["lazy"]
+profiling = ["hotpath/hotpath"]
+lazy = []
+arbitrary_precision = []
+
+[[bench]]
+name = "comparison"
+harness = false
+
+[dev-dependencies]
+ajson = "0.3.1"
+criterion = "0.8.1"
+gjson = "0.8.1"
+json = "0.12.4"
+jsonic = "0.2.14"
+serde = "1.0.228"
+serde-json-core = "0.6.0"
+serde_json = "1.0.149"
+simd-json = "0.17.0"
+sonic-rs = "0.5.6"
+tinyjson = "2.5.1"
+
+[profile.profiling]
+inherits = "release"
+debug = true
